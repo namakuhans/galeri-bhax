@@ -39,7 +39,21 @@ local curY = local_plr.pos.y // 32
 if not b.reached_start then
 if curX == startX and curY == startY then
 b.reached_start = true
+local minX, maxX
+if startX == endX then
+minX = 0
+local w = GetWorld()
+maxX = (w and w.width and w.width > 0) and (w.width - 1) or 99
+else
+minX = math.min(startX, endX)
+maxX = math.max(startX, endX)
+end
+
+if startX > endX then
+dirX = -1
+else
 dirX = 1
+end
 else
 local nextX = curX
 local nextY = curY
