@@ -14,7 +14,7 @@ local function movement_thread()
 local reached_start = false
 local startX, startY = parse_coords(a.tile_start)
 local endX, endY = parse_coords(a.tile_end)
-local dirX = (startX <= endX) and 1 or -1
+local dirX = 1
 
 while b.running do
 local local_plr = GetLocal()
@@ -25,7 +25,7 @@ local curY = local_plr.pos.y // 32
 if not reached_start then
 if curX == startX and curY == startY then
 reached_start = true
-dirX = (startX <= endX) and 1 or -1
+dirX = 1
 else
 local nextX = curX
 local nextY = curY
@@ -56,17 +56,20 @@ LogToConsole("`2Item Search Completed!")
 b.running = false
 break
 else
-local minX = math.min(startX, endX)
-local maxX = math.max(startX, endX)
-local yStep = (startY <= endY) and 1 or -1
+local minX, maxX
+if startX == endX then
+minX = 0
+local w = GetWorld()
+maxX = (w and w.width and w.width > 0) and (w.width - 1) or 99
+else
+minX = math.min(startX, endX)
+maxX = math.max(startX, endX)
+end
 
+local yStep = (startY <= endY) and 1 or -1
 local nextX = curX
 local nextY = curY
 
-if minX == maxX then
-nextX = curX
-nextY = curY + yStep
-else
 local targetX = curX + dirX
 if targetX >= minX and targetX <= maxX then
 nextX = targetX
@@ -81,7 +84,6 @@ if curX < endX then
 nextX = curX + 1
 elseif curX > endX then
 nextX = curX - 1
-end
 end
 end
 end
