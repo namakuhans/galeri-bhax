@@ -1,5 +1,19 @@
 local a={show_window=true,item_id=1348,delay=1,tile_start="0,0",tile_end="0,0"}
-local b={running=false}
+local b={running=false,reached_start=false}
+
+-- Enable ModFly when script is executed
+if ChangeValue then
+pcall(ChangeValue, "[C] ModFly", true)
+end
+
+-- Check if ImGui is available / enabled
+if type(ImGui) ~= "table" then
+SendVariantList({
+[0] = "OnTextOverlay",
+[1] = "`4Please enable ImGui in Bothax menu!"
+})
+LogToConsole("`4Please enable ImGui in Bothax menu!")
+end
 
 local function parse_coords(str)
 if not str then return 0, 0 end
@@ -11,7 +25,7 @@ return 0, 0
 end
 
 local function movement_thread()
-local reached_start = false
+b.reached_start = false
 local startX, startY = parse_coords(a.tile_start)
 local endX, endY = parse_coords(a.tile_end)
 local dirX = 1
@@ -22,9 +36,9 @@ if local_plr and local_plr.pos then
 local curX = local_plr.pos.x // 32
 local curY = local_plr.pos.y // 32
 
-if not reached_start then
+if not b.reached_start then
 if curX == startX and curY == startY then
-reached_start = true
+b.reached_start = true
 dirX = 1
 else
 local nextX = curX
@@ -54,6 +68,7 @@ SendVariantList({
 })
 LogToConsole("`2Item Search Completed!")
 b.running = false
+b.reached_start = false
 break
 else
 local minX, maxX
@@ -89,17 +104,18 @@ end
 end
 
 FindPath(nextX, nextY)
-Sleep(300)
+Sleep(5000)
 end
 end
 else
 Sleep(100)
 end
 end
+b.reached_start = false
 end
 
 function c()
-if not a.show_window then return end
+if type(ImGui) ~= "table" or not a.show_window then return end
 local d,e=ImGui.Begin("Item Finder",a.show_window)
 a.show_window=e
 if not d then ImGui.End() return end
@@ -123,12 +139,14 @@ ImGui.Separator()
 if not b.running then
 if ImGui.Button("START",ImVec2(120,30)) then
 b.running=true
+b.reached_start=false
 LogToConsole("`2Item Search STARTED")
 RunThread(movement_thread)
 end
 else
 if ImGui.Button("STOP",ImVec2(120,30)) then
 b.running=false
+b.reached_start=false
 LogToConsole("`4Item Search STOPPED")
 end
 end
@@ -157,7 +175,7 @@ end)
 
 local function h()
 while true do
-if b.running then
+if b.running and b.reached_start then
 local i=a.item_id
 SendPacket(2,"action|dialog_return\n"..
 "dialog_name|item_search\n"..
