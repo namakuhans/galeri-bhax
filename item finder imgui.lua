@@ -1,4 +1,4 @@
-local a={show_window=true,item_id=1348,delay=1,tile_start="0, 0",tile_end="0, 0"}
+local a={show_window=true,item_id=1348,delay=1,tile_start="0,0",tile_end="0,0"}
 local b={running=false}
 
 local function parse_coords(str)
@@ -12,20 +12,20 @@ end
 
 local function movement_thread()
 local reached_start = false
-local dirX = 1
+local startX, startY = parse_coords(a.tile_start)
+local endX, endY = parse_coords(a.tile_end)
+local dirX = (startX <= endX) and 1 or -1
 
 while b.running do
 local local_plr = GetLocal()
 if local_plr and local_plr.pos then
 local curX = local_plr.pos.x // 32
 local curY = local_plr.pos.y // 32
-local startX, startY = parse_coords(a.tile_start)
-local endX, endY = parse_coords(a.tile_end)
 
 if not reached_start then
 if curX == startX and curY == startY then
 reached_start = true
-dirX = 1
+dirX = (startX <= endX) and 1 or -1
 else
 local nextX = curX
 local nextY = curY
@@ -110,11 +110,11 @@ if f then a.item_id=g end
 f,g=ImGui.InputInt("Delay (ms)",a.delay)
 if f then a.delay=g end
 
-f,g=ImGui.InputText("Tile Start",a.tile_start)
-if f then a.tile_start=g end
+f,g=ImGui.InputText("Tile Start",a.tile_start,256)
+if f and g then a.tile_start=g end
 
-f,g=ImGui.InputText("Tile End",a.tile_end)
-if f then a.tile_end=g end
+f,g=ImGui.InputText("Tile End",a.tile_end,256)
+if f and g then a.tile_end=g end
 
 ImGui.Separator()
 
