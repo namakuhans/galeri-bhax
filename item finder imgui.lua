@@ -121,6 +121,8 @@ a.show_window=e
 if not d then ImGui.End() return end
 
 ImGui.Text("Item Finder")
+ImGui.TextWrapped("Pakan Cuma bisa skidding :(")
+ImGui.Separator()
 
 local f,g=ImGui.InputInt("Item ID",a.item_id)
 if f then a.item_id=g end
