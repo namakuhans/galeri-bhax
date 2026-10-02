@@ -1,6 +1,7 @@
 -- ==========================================================
 -- Bothax Disconnect Webhook Notification Script
 -- File: disconnect-notif.lua
+-- Creator: !   iHannsy × MasPakan
 -- ==========================================================
 
 -- User Configuration
@@ -13,6 +14,16 @@ local last_bot_name = "Unknown"
 local last_world_name = "UNKNOWN"
 local is_disconnected = false
 local disconnect_timestamp = 0
+
+-- Function to trigger OnTextOverlay in game
+local function showTextOverlay(message)
+    if SendVariantList then
+        SendVariantList({
+            [0] = "OnTextOverlay",
+            [1] = message
+        }, -1, 0)
+    end
+end
 
 -- Check whether the bot is currently connected
 local function isConnected()
@@ -63,6 +74,7 @@ end
 local function sendDiscordWebhook()
     if WEBHOOK_URL == "" or WEBHOOK_URL == "YOUR_DISCORD_WEBHOOK_URL_HERE" then
         LogToConsole("`4[Disconnect Notif]`1 Webhook URL is not configured!")
+        showTextOverlay("`4[Disconnect Notif]`1 Webhook URL belum diisi!")
         return
     end
 
@@ -97,7 +109,7 @@ local function sendDiscordWebhook()
         }
       ],
       "footer": {
-        "text": "Bothax Disconnect Notifier"
+        "text": "Bothax Disconnect Notifier | Creator: !   iHannsy × MasPakan"
       }
     }
   ]
@@ -108,18 +120,26 @@ local function sendDiscordWebhook()
         ["Content-Type"] = "application/json"
     }
 
-    local res = MakeRequest(WEBHOOK_URL, "POST", headers, payload)
-    if res and res.status >= 200 and res.status < 300 then
+    local pcall_ok, res = pcall(MakeRequest, WEBHOOK_URL, "POST", headers, payload)
+
+    if not pcall_ok or not res or res.error then
+        LogToConsole("`4[Disconnect Notif]`1 Aktifkan MakeRequest pada setting Bothax!")
+        showTextOverlay("`4[Disconnect Notif]`1 Aktifkan MakeRequest pada setting Bothax!")
+        return
+    end
+
+    if res.status >= 200 and res.status < 300 then
         LogToConsole("`2[Disconnect Notif]`1 Webhook notification sent successfully.")
     else
-        local errStatus = (res and res.status) or "Unknown error"
-        LogToConsole("`4[Disconnect Notif]`1 Failed to send webhook. Status: " .. tostring(errStatus))
+        LogToConsole("`4[Disconnect Notif]`1 Failed to send webhook. Status: " .. tostring(res.status))
+        showTextOverlay("`4[Disconnect Notif]`1 Gagal mengirim webhook! Status: " .. tostring(res.status))
     end
 end
 
 -- Main Monitoring Loop
 RunThread(function()
-    LogToConsole("`2[Disconnect Notif]`1 Script loaded and running.")
+    LogToConsole("`2[Disconnect Notif]`1 Script successfully loaded! Creator: `3!   iHannsy × MasPakan``")
+    showTextOverlay("`2[Disconnect Notif]`1 Script Active! `3!   iHannsy × MasPakan``")
 
     while true do
         if isConnected() then
