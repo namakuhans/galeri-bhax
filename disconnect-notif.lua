@@ -1,6 +1,6 @@
 local WEBHOOK_URL = "YOUR_DISCORD_WEBHOOK_URL_HERE"
 local DISCORD_USER_ID = "YOUR_DISCORD_USER_ID_HERE"
-local NOTIFY_INTERVAL = 30000
+local NOTIFY_INTERVAL = 300000
 
 local last_bot_name = "Unknown"
 local last_world_name = "UNKNOWN"
@@ -86,6 +86,13 @@ local function sendDiscordWebhook()
     end
 end
 
+local function autoRejoin()
+    if last_world_name ~= "" and last_world_name ~= "UNKNOWN" and RequestJoinWorld then
+        LogToConsole("`3[Disconnect Notif]`1 Attempting to rejoin world: `w" .. last_world_name)
+        RequestJoinWorld(last_world_name)
+    end
+end
+
 RunThread(function()
     LogToConsole("`2[Disconnect Notif]`1 Script successfully loaded! Creator: `3!   iHannsy × MasPakan``")
     showTextOverlay("`2[Disconnect Notif]`1 Script Active! `3!   iHannsy × MasPakan``")
@@ -107,6 +114,7 @@ RunThread(function()
             end
 
             sendDiscordWebhook()
+            autoRejoin()
             Sleep(NOTIFY_INTERVAL)
         end
     end
