@@ -1,5 +1,5 @@
 local a={show_window=true,item_id=1348,delay=1,tile_start="0,0",tile_end="0,0"}
-local b={running=false,reached_start=false}
+local b={running=false,reached_start=false,skip_tile=false}
 
 -- Enable ModFly when script is executed
 if ChangeValue then
@@ -26,6 +26,7 @@ end
 
 local function movement_thread()
 b.reached_start = false
+b.skip_tile = false
 local startX, startY = parse_coords(a.tile_start)
 local endX, endY = parse_coords(a.tile_end)
 local dirX = 1
@@ -118,7 +119,16 @@ end
 end
 
 FindPath(nextX, nextY)
-Sleep(5000)
+b.skip_tile = false
+local elapsed = 0
+while elapsed < 5000 and b.running do
+if b.skip_tile then
+b.skip_tile = false
+break
+end
+Sleep(50)
+elapsed = elapsed + 50
+end
 end
 end
 else
@@ -126,6 +136,7 @@ Sleep(100)
 end
 end
 b.reached_start = false
+b.skip_tile = false
 end
 
 function c()
@@ -156,6 +167,7 @@ if not b.running then
 if ImGui.Button("START",ImVec2(120,30)) then
 b.running=true
 b.reached_start=false
+b.skip_tile=false
 LogToConsole("`2Item Search STARTED")
 RunThread(movement_thread)
 end
@@ -163,6 +175,7 @@ else
 if ImGui.Button("STOP",ImVec2(120,30)) then
 b.running=false
 b.reached_start=false
+b.skip_tile=false
 LogToConsole("`4Item Search STOPPED")
 end
 end
@@ -184,6 +197,13 @@ if v[0]=="OnDialogRequest" then
 local d=v[1] or ""
 if d:find("Item Finder") or d:find("item_search") then
 return true
+end
+elseif v[0]=="OnTalkBubble" then
+local text=v[2] or ""
+if text:find("can't use /find here") then
+if b.running and b.reached_start then
+b.skip_tile=true
+end
 end
 end
 return false
